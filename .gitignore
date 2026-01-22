@@ -9,7 +9,7 @@ jsfinder
 # Output files
 *.txt
 *.json
-output/
+results/
 
 # Test/temp files
 old/
