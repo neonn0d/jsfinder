@@ -126,6 +126,23 @@ func main() {
 	var wg sync.WaitGroup
 	timeoutDuration := time.Duration(*timeout) * time.Second
 
+	// Progress ticker
+	done := make(chan struct{})
+	if !*silent {
+		go func() {
+			ticker := time.NewTicker(2 * time.Second)
+			defer ticker.Stop()
+			for {
+				select {
+				case <-done:
+					return
+				case <-ticker.C:
+					fmt.Printf("\r[*] Found: %d JS files...", collector.Count())
+				}
+			}
+		}()
+	}
+
 	// Start crawler
 	if !*noCrawl {
 		wg.Add(1)
@@ -194,6 +211,12 @@ func main() {
 
 	// Wait for all methods to complete
 	wg.Wait()
+	close(done)
+
+	// Clear progress line
+	if !*silent {
+		fmt.Print("\r                                        \r")
+	}
 
 	// Write results to file
 	if err := collector.WriteToFile(*outputFile); err != nil {
