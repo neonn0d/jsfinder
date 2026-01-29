@@ -143,7 +143,7 @@ func main() {
 				Verbose:     *verbose,
 			})
 
-			for result := range c.Crawl(targetURLs) {
+			for result := range c.Crawl(ctx, targetURLs) {
 				collector.Add(result.URL, result.Source)
 			}
 		}()

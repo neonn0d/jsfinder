@@ -45,7 +45,6 @@ type Crawler struct {
 
 // New creates a new Crawler instance
 func New(config Config) *Crawler {
-	ctx, cancel := context.WithCancel(context.Background())
 
 	// Configure HTTP client - disable HTTP/2 to avoid "unsolicited response" warnings
 	transport := &http.Transport{
@@ -81,14 +80,13 @@ func New(config Config) *Crawler {
 		client:         client,
 		queue:          make(chan string, 10000),
 		results:        make(chan Result, 1000),
-		ctx:            ctx,
-		cancel:         cancel,
 		allowedDomains: make(map[string]bool),
 	}
 }
 
 // Crawl starts crawling from the given URLs
-func (c *Crawler) Crawl(startURLs []string) chan Result {
+func (c *Crawler) Crawl(ctx context.Context, startURLs []string) chan Result {
+	c.ctx, c.cancel = context.WithCancel(ctx)
 	// Set allowed domains from start URLs
 	for _, u := range startURLs {
 		parsed, err := url.Parse(u)
